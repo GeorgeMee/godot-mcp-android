@@ -13,6 +13,9 @@ var _download_request: HTTPRequest
 var _latest_version := ""
 var _latest_zip_url := ""
 var _download_path := ""
+var _copy_url_button: Button
+var _manual_install_button: Button
+var _file_dialog: FileDialog
 
 
 func _init() -> void:
@@ -46,6 +49,17 @@ func _build_ui() -> void:
 	_install_button.pressed.connect(_on_install_update_pressed)
 	add_child(_install_button)
 
+	_copy_url_button = Button.new()
+	_copy_url_button.text = "Copy Download URL"
+	_copy_url_button.disabled = true
+	_copy_url_button.pressed.connect(_on_copy_url_pressed)
+	add_child(_copy_url_button)
+
+	_manual_install_button = Button.new()
+	_manual_install_button.text = "Manual Install..."
+	_manual_install_button.pressed.connect(_on_manual_install_pressed)
+	add_child(_manual_install_button)
+
 	_status_label = Label.new()
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status_label.text = "Ready."
@@ -58,6 +72,14 @@ func _build_ui() -> void:
 	_download_request = HTTPRequest.new()
 	_download_request.request_completed.connect(_on_download_request_completed)
 	add_child(_download_request)
+
+	_file_dialog = FileDialog.new()
+	_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	_file_dialog.title = "Select downloaded plugin zip"
+	_file_dialog.add_filter("*.zip", "ZIP Archive")
+	_file_dialog.file_selected.connect(_on_zip_file_selected)
+	add_child(_file_dialog)
 
 
 func _on_check_update_pressed() -> void:
@@ -105,7 +127,7 @@ func _on_install_update_pressed() -> void:
 func _on_release_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	_set_busy(false)
 	if result != HTTPRequest.RESULT_SUCCESS:
-		_set_status("Release request failed: %s" % result)
+		_set_status("Release request failed: %s (code %d)" % [_http_result_name(result), result])
 		return
 	if response_code != 200:
 		_set_status("GitHub release request returned HTTP %d." % response_code)
@@ -123,6 +145,7 @@ func _on_release_request_completed(result: int, response_code: int, _headers: Pa
 		return
 
 	_install_button.disabled = false
+	_copy_url_button.disabled = false
 	var installed := _get_installed_version()
 	if installed == _latest_version:
 		_set_status("Latest release is already installed: %s" % installed)
@@ -133,7 +156,7 @@ func _on_release_request_completed(result: int, response_code: int, _headers: Pa
 func _on_download_request_completed(result: int, response_code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
 	_set_busy(false)
 	if result != HTTPRequest.RESULT_SUCCESS:
-		_set_status("Download failed: %s" % result)
+		_set_status("Download failed: %s (code %d)" % [_http_result_name(result), result])
 		return
 	if response_code < 200 or response_code >= 300:
 		_set_status("Download returned HTTP %d." % response_code)
@@ -206,6 +229,56 @@ func _get_installed_version() -> String:
 	if error != OK:
 		return "unknown"
 	return String(config.get_value("plugin", "version", "unknown"))
+
+
+func _on_copy_url_pressed() -> void:
+	if _latest_zip_url.is_empty():
+		return
+	DisplayServer.clipboard_set(_latest_zip_url)
+	_set_status("Download URL copied to clipboard!")
+
+
+func _on_manual_install_pressed() -> void:
+	_file_dialog.popup_centered(Vector2i(600, 400))
+
+
+func _on_zip_file_selected(path: String) -> void:
+	var error := _install_zip(path)
+	if error != OK:
+		_set_status("Install failed: %s" % error_string(error))
+		return
+	_set_status("Plugin installed from file. Restart Godot Editor to reload the plugin.")
+
+
+static func _http_result_name(result: int) -> String:
+	match result:
+		HTTPRequest.RESULT_SUCCESS:
+			return "SUCCESS"
+		HTTPRequest.RESULT_CHUNKED_BODY_SIZE_MISMATCH:
+			return "CHUNKED_BODY_SIZE_MISMATCH"
+		HTTPRequest.RESULT_CANT_CONNECT:
+			return "CANT_CONNECT"
+		HTTPRequest.RESULT_CANT_RESOLVE:
+			return "CANT_RESOLVE"
+		HTTPRequest.RESULT_CONNECTION_ERROR:
+			return "CONNECTION_ERROR"
+		HTTPRequest.RESULT_TLS_HANDSHAKE_ERROR:
+			return "TLS_HANDSHAKE_ERROR"
+		HTTPRequest.RESULT_NO_RESPONSE:
+			return "NO_RESPONSE"
+		HTTPRequest.RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+			return "BODY_SIZE_LIMIT_EXCEEDED"
+		HTTPRequest.RESULT_REQUEST_FAILED:
+			return "REQUEST_FAILED"
+		HTTPRequest.RESULT_DOWNLOAD_FILE_CANT_OPEN:
+			return "DOWNLOAD_FILE_CANT_OPEN"
+		HTTPRequest.RESULT_DOWNLOAD_FILE_WRITE_ERROR:
+			return "DOWNLOAD_FILE_WRITE_ERROR"
+		HTTPRequest.RESULT_REDIRECT_LIMIT_REACHED:
+			return "REDIRECT_LIMIT_REACHED"
+		HTTPRequest.RESULT_TIMEOUT:
+			return "TIMEOUT"
+	return "UNKNOWN(%d)" % result
 
 
 func _set_busy(is_busy: bool) -> void:
