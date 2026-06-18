@@ -65,3 +65,27 @@ func tool_error(message: String) -> Dictionary:
 		"ok": false,
 		"error": message,
 	}
+
+
+func normalize_project_path(path: String) -> String:
+	var cleaned := path.strip_edges().replace("\\", "/")
+	if cleaned.begins_with("res://"):
+		cleaned = cleaned.trim_prefix("res://")
+	while cleaned.begins_with("/"):
+		cleaned = cleaned.substr(1)
+	return cleaned.simplify_path()
+
+
+func globalize_project_path(path: String) -> String:
+	return ProjectSettings.globalize_path("res://%s" % normalize_project_path(path))
+
+
+func is_safe_project_path(path: String) -> bool:
+	var normalized := normalize_project_path(path)
+	if normalized == "" or normalized == ".":
+		return true
+	if normalized.begins_with("../") or normalized == "..":
+		return false
+	if normalized.is_absolute_path():
+		return false
+	return true

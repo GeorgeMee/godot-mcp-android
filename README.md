@@ -58,10 +58,14 @@ The plugin adds a `Godot MCP` dock with release-based update controls:
 Current tools:
 
 - `ping`
+- `get_project_info`
 - `get_scene_tree`
 - `add_node`
 - `set_node_property`
 - `save_scene`
+- `list_files`
+- `read_file`
+- `write_file`
 
 ## Quick Check
 
