@@ -1,8 +1,8 @@
 @tool
 extends EditorPlugin
 
-const MCPHttpServer := preload("res://addons/godot_mcp_android/scripts/mcp_http_server.gd")
-const MCPWebSocketServer := preload("res://addons/godot_mcp_android/scripts/mcp_websocket_server.gd")
+const MCPHttpServer := preload("res://addons/godot_mcp_android/scripts/server/mcp_http_server.gd")
+const MCPWebSocketServer := preload("res://addons/godot_mcp_android/scripts/server/mcp_websocket_server.gd")
 
 var _http_server: MCPHttpServer
 var _websocket_server: MCPWebSocketServer

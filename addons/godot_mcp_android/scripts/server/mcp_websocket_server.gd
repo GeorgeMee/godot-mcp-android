@@ -2,7 +2,7 @@
 class_name MCPWebSocketServer
 extends RefCounted
 
-const MCPDispatcher := preload("res://addons/godot_mcp_android/scripts/mcp_dispatcher.gd")
+const MCPDispatcher := preload("res://addons/godot_mcp_android/scripts/protocol/mcp_dispatcher.gd")
 
 var bind_host := "127.0.0.1"
 var port := 8766

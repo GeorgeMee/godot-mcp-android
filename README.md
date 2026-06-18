@@ -18,10 +18,25 @@ addons/godot_mcp_android/
   plugin.cfg
   plugin.gd
   scripts/
-    mcp_http_server.gd
-    mcp_websocket_server.gd
-    mcp_dispatcher.gd
+    server/
+      mcp_http_server.gd
+      mcp_websocket_server.gd
+    protocol/
+      mcp_dispatcher.gd
+      mcp_response.gd
+      mcp_tool.gd
+      mcp_tool_registry.gd
+    tools/
+      scene/
+        add_node_tool.gd
+        get_scene_tree_tool.gd
+        save_scene_tool.gd
+        set_node_property_tool.gd
+      system/
+        ping_tool.gd
 ```
+
+Transports only parse and serialize messages. `protocol/` owns JSON-RPC and tool registration. Individual editor capabilities live under `tools/`.
 
 ## MCP Methods
 
