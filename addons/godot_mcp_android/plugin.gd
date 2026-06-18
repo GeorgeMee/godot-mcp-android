@@ -3,12 +3,17 @@ extends EditorPlugin
 
 const MCPHttpServer := preload("res://addons/godot_mcp_android/scripts/server/mcp_http_server.gd")
 const MCPWebSocketServer := preload("res://addons/godot_mcp_android/scripts/server/mcp_websocket_server.gd")
+const MCPUpdaterDock := preload("res://addons/godot_mcp_android/scripts/ui/mcp_updater_dock.gd")
 
 var _http_server: MCPHttpServer
 var _websocket_server: MCPWebSocketServer
+var _updater_dock: MCPUpdaterDock
 
 
 func _enter_tree() -> void:
+	_updater_dock = MCPUpdaterDock.new()
+	add_control_to_dock(DOCK_SLOT_LEFT_BL, _updater_dock)
+
 	_http_server = MCPHttpServer.new(get_editor_interface())
 	var error := _http_server.start()
 	if error != OK:
@@ -28,6 +33,11 @@ func _enter_tree() -> void:
 
 func _exit_tree() -> void:
 	set_process(false)
+	if _updater_dock != null:
+		remove_control_from_docks(_updater_dock)
+		_updater_dock.queue_free()
+		_updater_dock = null
+
 	if _websocket_server != null:
 		_websocket_server.stop()
 		_websocket_server = null

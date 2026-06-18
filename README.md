@@ -34,9 +34,20 @@ addons/godot_mcp_android/
         set_node_property_tool.gd
       system/
         ping_tool.gd
+    ui/
+      mcp_updater_dock.gd
 ```
 
 Transports only parse and serialize messages. `protocol/` owns JSON-RPC and tool registration. Individual editor capabilities live under `tools/`.
+
+## Android Plugin Updates
+
+The plugin adds a `Godot MCP` dock with release-based update controls:
+
+- `Check Plugin Update` calls the GitHub latest release API.
+- `Install Latest Release` downloads a release zip asset whose name contains `godot_mcp_android`.
+- The zip must contain `addons/godot_mcp_android/`.
+- Restart the editor after installation so Godot reloads the plugin scripts.
 
 ## MCP Methods
 
