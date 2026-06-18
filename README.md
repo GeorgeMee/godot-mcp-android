@@ -66,6 +66,10 @@ Current tools:
 - `list_files`
 - `read_file`
 - `write_file`
+- `scan_filesystem`
+- `get_resource_uid`
+- `validate_resource`
+- `get_editor_log`
 
 ## Quick Check
 
