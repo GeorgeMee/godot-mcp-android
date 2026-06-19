@@ -4,6 +4,14 @@ extends VBoxContainer
 
 const PLUGIN_DIR := "addons/godot_mcp_android"
 const LATEST_RELEASE_URL := "https://api.github.com/repos/GeorgeMee/godot-mcp-android/releases/latest"
+const SETTING_BIND_HOST := "godot_mcp_android/bind_host"
+const SETTING_HTTP_PORT := "godot_mcp_android/http_port"
+const SETTING_WS_PORT := "godot_mcp_android/ws_port"
+const DEFAULT_BIND_HOST := "0.0.0.0"
+const DEFAULT_HTTP_PORT := 8765
+const DEFAULT_WS_PORT := 8766
+
+signal settings_changed(host: String, http_port: int, ws_port: int)
 
 var _check_button: Button
 var _install_button: Button
@@ -16,6 +24,10 @@ var _download_path := ""
 var _copy_url_button: Button
 var _manual_install_button: Button
 var _file_dialog: FileDialog
+var _host_input: LineEdit
+var _http_port_spin: SpinBox
+var _ws_port_spin: SpinBox
+var _apply_button: Button
 
 
 func _init() -> void:
@@ -73,13 +85,65 @@ func _build_ui() -> void:
 	_download_request.request_completed.connect(_on_download_request_completed)
 	add_child(_download_request)
 
-	_file_dialog = FileDialog.new()
+_file_dialog = FileDialog.new()
 	_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	_file_dialog.title = "Select downloaded plugin zip"
 	_file_dialog.add_filter("*.zip", "ZIP Archive")
 	_file_dialog.file_selected.connect(_on_zip_file_selected)
 	add_child(_file_dialog)
+
+	var separator := HSeparator.new()
+	add_child(separator)
+
+	var settings_title := Label.new()
+	settings_title.text = "Server Settings"
+	settings_title.add_theme_font_size_override("font_size", 14)
+	add_child(settings_title)
+
+	var host_row := HBoxContainer.new()
+	var host_label := Label.new()
+	host_label.text = "Host:"
+	host_label.custom_minimum_size = Vector2(80, 0)
+	host_row.add_child(host_label)
+	_host_input = LineEdit.new()
+	_host_input.text = ProjectSettings.get_setting(SETTING_BIND_HOST, DEFAULT_BIND_HOST)
+	_host_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	host_row.add_child(_host_input)
+	add_child(host_row)
+
+	var http_port_row := HBoxContainer.new()
+	var http_port_label := Label.new()
+	http_port_label.text = "HTTP Port:"
+	http_port_label.custom_minimum_size = Vector2(80, 0)
+	http_port_row.add_child(http_port_label)
+	_http_port_spin = SpinBox.new()
+	_http_port_spin.min_value = 1
+	_http_port_spin.max_value = 65535
+	_http_port_spin.step = 1
+	_http_port_spin.value = ProjectSettings.get_setting(SETTING_HTTP_PORT, DEFAULT_HTTP_PORT)
+	_http_port_spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	http_port_row.add_child(_http_port_spin)
+	add_child(http_port_row)
+
+	var ws_port_row := HBoxContainer.new()
+	var ws_port_label := Label.new()
+	ws_port_label.text = "WS Port:"
+	ws_port_label.custom_minimum_size = Vector2(80, 0)
+	ws_port_row.add_child(ws_port_label)
+	_ws_port_spin = SpinBox.new()
+	_ws_port_spin.min_value = 1
+	_ws_port_spin.max_value = 65535
+	_ws_port_spin.step = 1
+	_ws_port_spin.value = ProjectSettings.get_setting(SETTING_WS_PORT, DEFAULT_WS_PORT)
+	_ws_port_spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ws_port_row.add_child(_ws_port_spin)
+	add_child(ws_port_row)
+
+	_apply_button = Button.new()
+	_apply_button.text = "Apply & Restart Servers"
+	_apply_button.pressed.connect(_on_apply_settings_pressed)
+	add_child(_apply_button)
 
 
 func _on_check_update_pressed() -> void:
@@ -168,6 +232,24 @@ func _on_download_request_completed(result: int, response_code: int, _headers: P
 		return
 
 	_set_status("Update installed. Restart Godot Editor to reload the plugin.")
+
+
+func _on_apply_settings_pressed() -> void:
+	var host := _host_input.text.strip_edges()
+	if host == "":
+		_set_status("Host cannot be empty.")
+		return
+
+	var http_port := int(_http_port_spin.value)
+	var ws_port := int(_ws_port_spin.value)
+
+	ProjectSettings.set_setting(SETTING_BIND_HOST, host)
+	ProjectSettings.set_setting(SETTING_HTTP_PORT, http_port)
+	ProjectSettings.set_setting(SETTING_WS_PORT, ws_port)
+	ProjectSettings.save()
+
+	settings_changed.emit(host, http_port, ws_port)
+	_set_status("Settings applied. Servers restarting on %s (HTTP:%d, WS:%d)..." % [host, http_port, ws_port])
 
 
 func _find_release_zip_url(release_data: Dictionary) -> String:
