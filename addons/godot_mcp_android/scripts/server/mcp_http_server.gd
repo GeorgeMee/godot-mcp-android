@@ -7,7 +7,7 @@ const MCPDispatcher := preload("res://addons/godot_mcp_android/scripts/protocol/
 const SETTING_BIND_HOST := "godot_mcp_android/bind_host"
 const SETTING_HTTP_PORT := "godot_mcp_android/http_port"
 
-var bind_host := "0.0.0.0"
+var bind_host := "127.0.0.1"
 var port := 8765
 
 var _editor_interface: EditorInterface

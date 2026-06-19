@@ -7,11 +7,12 @@ const LATEST_RELEASE_URL := "https://api.github.com/repos/GeorgeMee/godot-mcp-an
 const SETTING_BIND_HOST := "godot_mcp_android/bind_host"
 const SETTING_HTTP_PORT := "godot_mcp_android/http_port"
 const SETTING_WS_PORT := "godot_mcp_android/ws_port"
-const DEFAULT_BIND_HOST := "0.0.0.0"
+const DEFAULT_BIND_HOST := "127.0.0.1"
 const DEFAULT_HTTP_PORT := 8765
 const DEFAULT_WS_PORT := 8766
 
 signal settings_changed(host: String, http_port: int, ws_port: int)
+signal focus_restored()
 
 var _check_button: Button
 var _install_button: Button
@@ -144,6 +145,11 @@ _file_dialog = FileDialog.new()
 	_apply_button.text = "Apply & Restart Servers"
 	_apply_button.pressed.connect(_on_apply_settings_pressed)
 	add_child(_apply_button)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN:
+		focus_restored.emit()
 
 
 func _on_check_update_pressed() -> void:

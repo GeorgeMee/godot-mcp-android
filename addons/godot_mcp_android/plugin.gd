@@ -13,6 +13,7 @@ var _updater_dock: MCPUpdaterDock
 func _enter_tree() -> void:
 	_updater_dock = MCPUpdaterDock.new()
 	_updater_dock.settings_changed.connect(_on_settings_changed)
+	_updater_dock.focus_restored.connect(_on_focus_restored)
 	add_control_to_dock(DOCK_SLOT_LEFT_BL, _updater_dock)
 
 	_start_servers()
@@ -41,6 +42,14 @@ func _start_servers() -> void:
 
 
 func _on_settings_changed(_host: String, _http_port: int, _ws_port: int) -> void:
+	_restart_servers()
+
+
+func _on_focus_restored() -> void:
+	_restart_servers()
+
+
+func _restart_servers() -> void:
 	_http_server.stop()
 	_websocket_server.stop()
 	_http_server = null
