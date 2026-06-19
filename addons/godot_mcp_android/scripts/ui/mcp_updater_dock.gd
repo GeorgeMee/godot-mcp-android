@@ -86,7 +86,7 @@ func _build_ui() -> void:
 	_download_request.request_completed.connect(_on_download_request_completed)
 	add_child(_download_request)
 
-_file_dialog = FileDialog.new()
+	_file_dialog = FileDialog.new()
 	_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	_file_dialog.title = "Select downloaded plugin zip"
