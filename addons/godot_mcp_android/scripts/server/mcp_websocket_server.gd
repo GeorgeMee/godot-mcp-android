@@ -4,7 +4,10 @@ extends RefCounted
 
 const MCPDispatcher := preload("res://addons/godot_mcp_android/scripts/protocol/mcp_dispatcher.gd")
 
-var bind_host := "127.0.0.1"
+const SETTING_BIND_HOST := "godot_mcp_android/bind_host"
+const SETTING_WS_PORT := "godot_mcp_android/ws_port"
+
+var bind_host := "0.0.0.0"
 var port := 8766
 
 var _editor_interface: EditorInterface
@@ -19,7 +22,23 @@ func _init(editor_interface: EditorInterface) -> void:
 
 
 func start() -> Error:
+	_apply_settings()
 	return _server.listen(port, bind_host)
+
+
+func configure(host: String, p_port: int) -> void:
+	bind_host = host
+	port = p_port
+
+
+func restart() -> Error:
+	stop()
+	return start()
+
+
+func _apply_settings() -> void:
+	bind_host = ProjectSettings.get_setting(SETTING_BIND_HOST, bind_host)
+	port = ProjectSettings.get_setting(SETTING_WS_PORT, port)
 
 
 func stop() -> void:

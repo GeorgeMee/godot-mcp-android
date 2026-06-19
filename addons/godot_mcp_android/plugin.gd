@@ -12,7 +12,18 @@ var _updater_dock: MCPUpdaterDock
 
 func _enter_tree() -> void:
 	_updater_dock = MCPUpdaterDock.new()
+	_updater_dock.settings_changed.connect(_on_settings_changed)
 	add_control_to_dock(DOCK_SLOT_LEFT_BL, _updater_dock)
+
+	_start_servers()
+	set_process(true)
+
+
+func _start_servers() -> void:
+	if _http_server != null:
+		_http_server = null
+	if _websocket_server != null:
+		_websocket_server = null
 
 	_http_server = MCPHttpServer.new(get_editor_interface())
 	var error := _http_server.start()
@@ -28,7 +39,13 @@ func _enter_tree() -> void:
 	else:
 		print("Godot MCP Android WebSocket JSON-RPC listening on ws://%s:%d" % [_websocket_server.bind_host, _websocket_server.port])
 
-	set_process(true)
+
+func _on_settings_changed(_host: String, _http_port: int, _ws_port: int) -> void:
+	_http_server.stop()
+	_websocket_server.stop()
+	_http_server = null
+	_websocket_server = null
+	_start_servers()
 
 
 func _exit_tree() -> void:
