@@ -127,8 +127,8 @@ func _handle_http_request(request_text: String) -> Dictionary:
 			"transport": "http-json-rpc",
 		})
 
-	if method != "POST" or path != "/rpc":
-		return _http_result(404, {"error": "use POST /rpc or GET /health"})
+	if method != "POST" or (path != "/rpc" and path != "/"):
+		return _http_result(404, {"error": "use POST /, POST /rpc, or GET /health"})
 
 	var content_length := _get_content_length(header_text)
 	var body := request_text.substr(header_end + 4, content_length)

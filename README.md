@@ -6,6 +6,7 @@ Initial transports:
 
 - HTTP JSON-RPC on `127.0.0.1:8765`
 - `GET /health`
+- `POST /`
 - `POST /rpc`
 - WebSocket JSON-RPC on `ws://127.0.0.1:8766`
 
