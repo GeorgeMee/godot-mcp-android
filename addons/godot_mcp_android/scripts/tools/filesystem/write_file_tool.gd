@@ -48,7 +48,8 @@ func execute(arguments: Dictionary) -> Dictionary:
 	file.close()
 
 	if editor_interface != null:
-		editor_interface.get_resource_filesystem().scan()
+		editor_interface.get_resource_filesystem().scan_sources()
+		editor_interface.get_resource_filesystem().update_file(resource_path)
 
 	return {
 		"ok": true,

@@ -3,11 +3,11 @@ extends MCPTool
 
 
 func get_name() -> String:
-	return "set_node_property"
+	return "get_node_property"
 
 
 func get_description() -> String:
-	return "Set one property on a node in the edited scene."
+	return "Get one property from a node in the edited scene."
 
 
 func get_input_schema() -> Dictionary:
@@ -16,9 +16,8 @@ func get_input_schema() -> Dictionary:
 		"properties": {
 			"node_path": {"type": "string", "description": "NodePath from the edited scene root. Use . for the root."},
 			"property": {"type": "string"},
-			"value": {},
 		},
-		"required": ["node_path", "property", "value"],
+		"required": ["node_path", "property"],
 		"additionalProperties": false,
 	}
 
@@ -29,13 +28,13 @@ func execute(arguments: Dictionary) -> Dictionary:
 		return tool_error("node not found")
 
 	var property_name := String(arguments.get("property", ""))
-	node.set(property_name, arguments.get("value"))
+	if property_name == "":
+		return tool_error("property is required")
 
-	if property_name == "script" and node.is_inside_tree() and node.has_method("_ready"):
-		node._ready()
-
+	var value = node.get(property_name)
 	return {
 		"ok": true,
 		"path": relative_scene_path(node),
 		"property": property_name,
+		"value": value,
 	}
