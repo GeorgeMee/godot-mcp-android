@@ -82,7 +82,7 @@ func poll() -> void:
 		_clients[index] = client
 
 		var request_text := buffer.get_string_from_utf8()
-		if not _has_complete_http_request(request_text):
+		if not _has_complete_http_request(request_text, buffer):
 			continue
 
 		var response := _handle_http_request(request_text)
@@ -91,7 +91,7 @@ func poll() -> void:
 		_clients.remove_at(index)
 
 
-func _has_complete_http_request(request_text: String) -> bool:
+func _has_complete_http_request(request_text: String, buffer: PackedByteArray) -> bool:
 	var header_end := request_text.find("\r\n\r\n")
 	if header_end == -1:
 		return false
@@ -101,7 +101,7 @@ func _has_complete_http_request(request_text: String) -> bool:
 		return true
 
 	var body_start := header_end + 4
-	return request_text.length() >= body_start + content_length
+	return buffer.size() >= body_start + content_length
 
 
 func _handle_http_request(request_text: String) -> Dictionary:
